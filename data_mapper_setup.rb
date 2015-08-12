@@ -7,6 +7,7 @@ DataMapper.setup(:default, ENV['DATABASE_URL_2'] || "postgres://localhost/bookma
 require './app/models/link'
 require './app/models/tag'
 require './app/models/user'
+require 'dm-validations'
 
 DataMapper.finalize
 
