@@ -58,11 +58,20 @@ class BookmarkManager < Sinatra::Base
       session[:user_id] = @user.id
       redirect to('/')
     else 
-      flash.now[:notice] = "Password and confirmation password do not match"
+      flash.now[:errors] = @user.errors.full_messages
       erb :'users/new'
-    end
+    end 
   end  
 
+  def full_messages
+    @errors = []
+    if params[:password] != params[:password_confirmation]
+      @errors << "Password and confirmation password do not match"
+    end 
+    if params[:email] == '' ||nil
+      @errors << "Please enter an email address"
+    end 
+  end 
 
   # start the server if ruby file executed directly
   run! if app_file == $0

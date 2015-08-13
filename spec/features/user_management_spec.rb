@@ -1,4 +1,8 @@
+# require 'factory_girl'
+
 feature 'User sign up' do 
+	# user = create(:user)
+
 	scenario 'I can sign up as a new user' do 
 		expect { sign_up }.to change(User, :count).by(1)
 		expect(page).to have_content('Welcome, alice@example.com')
@@ -8,7 +12,19 @@ feature 'User sign up' do
 	scenario 'with a password that does not match' do 
 		expect { sign_up(password_confirmation:'wrong') }.not_to change(User, :count)
 		expect(current_path).to eq('/users')
-		expect(page).to have_content 'Password and confirmation password do not match'
+		expect(page).to have_content 'Password does not match the confirmation'
+	end 
+
+	scenario 'no email address given' do
+		expect { sign_up(email: '')}.not_to change(User, :count)
+		expect(current_path).to eq('/users')
+		expect(page).to have_content 'Email must not be blank'
+	end 
+
+	scenario 'I cannot sign up with an existing email' do 
+		sign_up
+		expect { sign_up }.to change(User, :count).by(0)
+		expect(page).to have_content('Email is already taken')
 	end 
 
 	def sign_up(email:'alice@example.com',
