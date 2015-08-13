@@ -12,6 +12,7 @@ gem 'sinatra'
 gem 'bcrypt'
 gem 'dm-validations'
 gem 'sinatra-flash'
+gem 'sinatra-partial'
 
 gem 'data_mapper'
 gem 'dm-postgres-adapter'
