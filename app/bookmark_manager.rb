@@ -1,91 +1,25 @@
 require 'sinatra/base'
 require 'sinatra/flash'
 require_relative '../data_mapper_setup'
+require 'sinatra/partial'
+
+require_relative './controllers/base'
+require_relative './controllers/welcome'
+require_relative './controllers/link'
+require_relative './controllers/user'
+require_relative './controllers/session'
 
 
+module Armadillo
+  class BookmarkManager < Sinatra::Base
 
-class BookmarkManager < Sinatra::Base
-  enable :sessions
-  register Sinatra::Flash
-  set :session_secret, 'super secret'
-  use Rack::MethodOverride
+    use Routes::Welcome
+    use Routes::Links
+    use Routes::Users
+    use Routes::Sessions
+   
 
-  helpers do 
-    def current_user
-      @current_user ||= User.get(session[:user_id]) if session[:user_id]
-    end 
-  end 
-
-  get '/' do
-    erb :welcome
+    # start the server if ruby file executed directly
+    run! if app_file == $0
   end
-
-  get '/links' do
-    @links = Link.all
-    erb :'links/index'
-  end
-
-  get '/links/new' do
-    erb :'links/new'
-  end
-
-  post '/links' do
-    link = Link.new(url: params[:url], title: params[:title])
-    params[:tag].empty? ? tag_array = ["Untagged"] : tag_array = params[:tag].split(', ')
-    tag_array.each do |tag|
-      new_tag = Tag.create(name: tag.capitalize)
-      link.tags << new_tag
-    end
-    link.save
-    redirect('/links')
-  end
-
-  get '/tags/:name' do
-    tag = Tag.all(name: params[:name])
-    @links = (tag ? tag.links : [])
-    erb :'links/index'
-  end
-
-  get '/users/new' do
-    @user = User.new 
-    erb :'users/new'
-  end 
-
-  post '/users' do 
-    @user = User.new(email: params[:email],
-                password: params[:password],
-                password_confirmation: params[:password_confirmation])
-    if @user.save
-      session[:user_id] = @user.id
-      redirect to('/')
-    else 
-      flash.now[:errors] = @user.errors.full_messages
-      erb :'users/new'
-    end 
-  end  
-
-  get '/sessions/new' do 
-    erb :'sessions/new'
-  end 
-
-  post '/sessions' do 
-    user = User.authenticate(params[:email], params[:password])
-    if user
-      session[:user_id] = user.id
-      redirect to('/links')
-    else 
-      flash.now[:errors] = ['The email or password is incorrect']
-      erb :'sessions/new'
-    end 
-  end 
-
-  delete '/sessions' do 
-    session[:user_id] = nil
-    flash.now[:notice]='goodbye!'
-    erb :'sessions/new'
-  end 
-
-
-  # start the server if ruby file executed directly
-  run! if app_file == $0
 end
